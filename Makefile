@@ -44,7 +44,7 @@ run:	# executes whole project
 
 val:	# executes whole project with valgrind
 	@printf '[\e[0;36mINFO\e[0m] Executing with all flags...\n'
-	$(CLANG) $(CLANG_FLAGS) -o $(PROGRAM_FILE) *.c && $(VALGRIND) $(VALGRIND_FLAGS) ./$(PROGRAM_FILE)
+	$(CLEAR) && $(CLANG) $(CLANG_FLAGS) -o $(PROGRAM_FILE) *.c && $(VALGRIND) $(VALGRIND_FLAGS) ./$(PROGRAM_FILE)
 
 bin:	# compiles the program
 	@printf '[\e[0;36mINFO\e[0m] Executing with all flags...\n'
