@@ -50,8 +50,10 @@ bin:	# compiles the program
 	@printf '[\e[0;36mINFO\e[0m] Executing with all flags...\n'
 	$(CLANG) $(CLANG_FLAGS) -o $(PROGRAM_FILE) *.c
 
-test:	# executes tests
+test: clean bin	# executes tests
 	@printf '[\e[0;36mINFO\e[0m] Executing with all flags...\n'
+	./testrunner
+
 
 commit:	# commitgs main
 	@printf '[\e[0;36mINFO\e[0m] Adding main...\n'
