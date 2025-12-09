@@ -214,7 +214,7 @@
 					
 					<tr>
 						<th>Public Testcases</th>
-						<td>1 / 1 (100%)</td>
+						<td>2 / 2 (100%)</td>
 					</tr>
 					<tr>
 						<th>Private Testcases</th>
@@ -222,7 +222,7 @@
 					</tr>
 					<tr>
 						<th>All Testcases</th>
-						<td>1 / 1 (100%)</td>
+						<td>2 / 2 (100%)</td>
 					</tr>
 				</table>
 			</div>
@@ -272,6 +272,42 @@
 				<td>
 					
 					<a target="_blank" href="./valgrind_logs/1/vg_log.txt">Open</a>
+					
+				</td>
+			</tr>
+			
+			<tr>
+				<td>
+					
+					<a href="#tc-2">#02:&nbsp;first testcase</a>
+					
+				</td>
+				<td>
+					<span class="success">&#x2714;</span>
+				</td>
+				<td>
+					
+					100%
+				</td>
+				<td>
+					correct
+				</td>
+				<td>
+					no
+				</td>
+				<td>
+					
+					0
+					
+				</td>
+				<td>
+					
+					0
+					
+				</td>
+				<td>
+					
+					<a target="_blank" href="./valgrind_logs/2/vg_log.txt">Open</a>
 					
 				</td>
 			</tr>
@@ -387,18 +423,146 @@
 				
 				<td class="orig">
 					<span>
-						Hello<span class="whitespace-hint">&middot;</span>Wordl!<span class="whitespace-hint">&#x21b5;<br /></span>
+						Hello<span class="whitespace-hint">&middot;</span>World!<span class="whitespace-hint">&#x21b5;<br /></span>
 					</span>
 					<span style="display: none;">
-						Hello&nbsp;Wordl!<br />
+						Hello&nbsp;World!<br />
 					</span>
 				</td>
 				<td class="edit">
 					<span>
-						Hello<span class="whitespace-hint">&middot;</span>Wordl!<span class="whitespace-hint">&#x21b5;<br /></span>
+						Hello<span class="whitespace-hint">&middot;</span>World!<span class="whitespace-hint">&#x21b5;<br /></span>
 					</span>
 					<span style="display: none;">
-						Hello&nbsp;Wordl!<br />
+						Hello&nbsp;World!<br />
+					</span>
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+</div>
+
+		
+		
+<div class="long_report">
+	<div class="title">
+		<h2>
+			#02:&nbsp;<a id="tc-2"></a>first testcase
+			<a class="link-summary" href="#summary">(back to summary)</a>
+		</h2>
+	</div>
+	<div class="description">
+		<p>
+			no description
+		</p>
+	</div>
+	<div class="shortinfo">
+		<table>
+			<tr>
+				<th>Type</th>
+				<td>OrdIOTest</td>
+			</tr>
+			<tr>
+				<th>Passed</th>
+				<td>
+					<span class="success">&#x2714;</span>
+				</td>
+			</tr>
+			<tr>
+				<th>Output-Diff</th>
+				<td>
+					100%
+				</td>
+			</tr>
+			
+			<tr>
+				<th>Timeout</th>
+				<td>
+					no
+				</td>
+			</tr>
+			<tr>
+				<th>Commandline</th>
+				<td>
+					<span class="inline-code">./main </span>
+				</td>
+			</tr>
+			<tr>
+				<th>Exit Code</th>
+				<td>
+					expected: <span class="inline-code">0</span>,
+					
+					got: <span class="inline-code">0</span>
+					
+				</td>
+			</tr>
+			
+			<tr>
+				<th>Memory Usage-Errors / Leaks</th>
+				<td>
+					
+					0 / 0
+					
+					
+					(<a target="_blank" href="./valgrind_logs/2/vg_log.txt">Open Log</a>)
+					
+				</td>
+			</tr>
+			
+		</table>
+	</div>
+
+	
+
+				<script>
+				function toggleWhitespaces(e) {
+					e = e || window.event;
+					let target = e.target || e.srcElement;
+					target = target.parentElement.parentElement.parentElement.children[2];
+					target1 = target.children[0];
+					target = target.children[1];
+					if (target.children[0].style.display == 'none') {
+						target.children[0].style.display = 'inline';
+						target.children[1].style.display = 'none';
+						target1.children[0].style.display = 'inline';
+						target1.children[1].style.display = 'none';
+					} else {
+						target.children[0].style.display = 'none';
+						target.children[1].style.display = 'inline';
+						target1.children[0].style.display = 'none';
+						target1.children[1].style.display = 'inline';
+					}
+				}
+				</script>
+	<div class="diff">
+		<table class="differences">
+			<tr>
+				<th>Reference Output</th>
+				<th>Your Output</th>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<button onclick="toggleWhitespaces(event)" style="display: block; margin: auto;">Toggle invisible characters</button>
+				</td>
+			</tr>
+			<tr>
+				
+				
+				<td class="orig">
+					<span>
+						Hello<span class="whitespace-hint">&middot;</span>World!<span class="whitespace-hint">&#x21b5;<br /></span>
+					</span>
+					<span style="display: none;">
+						Hello&nbsp;World!<br />
+					</span>
+				</td>
+				<td class="edit">
+					<span>
+						Hello<span class="whitespace-hint">&middot;</span>World!<span class="whitespace-hint">&#x21b5;<br /></span>
+					</span>
+					<span style="display: none;">
+						Hello&nbsp;World!<br />
 					</span>
 				</td>
 			</tr>

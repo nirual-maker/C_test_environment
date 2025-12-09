@@ -12,3 +12,11 @@ type = "OrdIO"
 io_file = "./tests/01/io.txt"
 io_prompt = "^\\s*>\\s*$"
 exp_exit_code = 0
+
+[[testcases]]
+name = "first testcase"
+description = "no description"
+type = "OrdIO"
+io_file = "./tests/02/io.txt"
+io_prompt = "^\\s*>\\s*$"
+exp_exit_code = 0
