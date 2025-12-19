@@ -4,17 +4,6 @@
 #include <stdbool.h>
 
 #define BUFFER_START_SIZE 256
-const char* user_commands[11] = { "quit",
-                                  "help",
-                                  "load",
-                                  "crop",
-                                  "place",
-                                  "undo",
-                                  "print",
-                                  "switch",
-                                  "tree",
-                                  "bmps",
-                                  "save" };
 
 typedef enum _ReturnValues_
 {
@@ -68,31 +57,53 @@ typedef enum _PromptId_
   PROMPT_HELP,
 } PromptId;
 
+typedef struct _UserCommand_
+{
+  Modes mode_;
+  size_t argc_;
+  char* argv_[6];
+} UserCommand;
+
+
+const UserCommand valid_commands[11] = {
+  { MODE_QUIT, 1, { "quit" } },
+  { MODE_HELP, 1, { "help" } },
+  { MODE_LOAD, 2, { "load" } },
+  { MODE_CROP, 6, { "crop" } },
+  { MODE_PLACE, 5, { "place" } },
+  { MODE_UNDO, 1, { "undo" } },
+  { MODE_PRINT, 1, { "print" } },
+  { MODE_SWITCH, 2, { "switch" } },
+  { MODE_TREE, 1, { "tree" } },
+  { MODE_BMPS, 1, { "bmps" } },
+  { MODE_SAVE, 2, { "save" } },
+};
+
 //----------------------------------------------------------------------------------------------------------------------
 /// program structure functions
 ReturnValues programLoop(int canvas_width, int canvas_height);
 ReturnValues getCommandLineArguments(int argc, char* argv[], int* canvas_width, int* canvas_height);
-ReturnValues executeModes(Modes mode);
-ReturnValues getUserMode(Modes* mode);
+ReturnValues executeModes(UserCommand* user_command);
+ReturnValues getUserMode(UserCommand* user_commands);
 ReturnValues modeQuit(void);
 ReturnValues modeHelp(void);
-ReturnValues modeLoad(void);
-ReturnValues modeCrop(void);
-ReturnValues modePlace(void);
+ReturnValues modeLoad(UserCommand* user_command);
+ReturnValues modeCrop(UserCommand* user_command);
+ReturnValues modePlace(UserCommand* user_command);
 ReturnValues modeUndo(void);
 ReturnValues modePrint(void);
-ReturnValues modeSwitch(void);
+ReturnValues modeSwitch(UserCommand* user_command);
 ReturnValues modeTree(void);
 ReturnValues modeBmps(void);
-ReturnValues modeSave(void);
+ReturnValues modeSave(UserCommand* user_command);
 
-//----------------------------------------------------------------------------------------------------------------------
 /// helper functions
 void validateParameter(int* value, char* paramenter);
 char* getUserInputArbitraryLength(void);
 char* getNextWordInString(char* string);
 char* searchCharInString(char* string, char character);
 int countWordsInString(char* string_to_count);
+void freeUserCommand(UserCommand* user_command);
 
 //----------------------------------------------------------------------------------------------------------------------
 /// printing functions
@@ -103,10 +114,12 @@ int main(int argc, char* argv[])
 {
   int canvas_width = 0;
   int canvas_height = 0;
+  /*
+
+  */
   ReturnValues return_value = getCommandLineArguments(argc, argv, &canvas_width, &canvas_height);
   if (return_value == RETURN_INVALID_AMMOUNT_PARAMETERS || return_value == RETURN_INVALID_CANVAS_SIZE)
     return return_value;
-  printWelcomeMessage(canvas_width, canvas_height);
   return programLoop(canvas_width, canvas_height);
 }
 
@@ -114,21 +127,25 @@ int main(int argc, char* argv[])
 /// program structure functions
 ReturnValues programLoop(int canvas_width, int canvas_height)
 {
+  printWelcomeMessage(canvas_width, canvas_height);
   ReturnValues return_value = RETURN_QUIT;
-  Modes mode = MODE_DEFAULT;
+  UserCommand user_command = { MODE_DEFAULT, 0, { NULL } };
   while (1)
   {
     printf(" > ");
-    return_value = getUserMode(&mode);
+    return_value = getUserMode(&user_command);
     if (return_value == RETURN_BAD_ALLOC)
     {
       printErrorMessage(ERROR_BAD_ALLOC);
       return return_value;
     }
     if (return_value == RETURN_INVALID)
+    {
+      printErrorMessage(ERROR_COMMAND_UNKNOWN);
       continue;
+    }
     
-    return_value = executeModes(mode);
+    return_value = executeModes(&user_command);
     if (return_value == RETURN_BAD_ALLOC)
     {
       printErrorMessage(ERROR_BAD_ALLOC);
@@ -156,71 +173,96 @@ ReturnValues getCommandLineArguments(int argc, char* argv[], int* canvas_width, 
   return RETURN_SUCCESS;
 }
 
-ReturnValues getUserMode(Modes* mode)
+ReturnValues getUserMode(UserCommand* user_command)
 {
-  int argument_count = 0;
-  char* command = NULL;
-
   char* user_input = getUserInputArbitraryLength();
   if (user_input == NULL)
     return RETURN_BAD_ALLOC;
-  argument_count = countWordsInString(user_input);
-  command = getNextWordInString(user_input);
 
-
-  for (size_t i = 0; i < sizeof(user_commands) / sizeof(user_commands[0]); i++)
+  user_command->argc_ = countWordsInString(user_input);
+  if (user_command->argc_ == 0)
   {
-    if (strncmp(command, user_commands[i], strlen(user_commands[i])) == 0)
+    free(user_input);
+    return RETURN_INVALID;
+  }
+  char* active_word = getNextWordInString(user_input);
+
+  user_command->mode_ = MODE_DEFAULT;
+  for (size_t i = 0; i < sizeof(valid_commands) / sizeof(valid_commands[0]); i++)
+  {
+    if (strncmp(active_word, valid_commands[i].argv_[0], strlen(valid_commands[i].argv_[0])) == 0)
     {
-      *mode = i;
-      switch (argument_count)
+      if (user_command->argc_ != valid_commands[i].argc_)
       {
-        case 1: // quit help undo print tree bmps
-          free(user_input);
-          return RETURN_SUCCESS;
-        case 2: // load switch save
-          break;
-        case 5: // place
-          break;
-        case 6: // crop
-          break;
-        default:
-          break;
+        free(user_input);
+        return RETURN_INVALID;
       }
+      user_command->mode_ = i;
+      if (valid_commands[i].argc_ == 1)
+      {
+        free(user_input);
+        return RETURN_SUCCESS;
+      }
+      char* active_word_end = NULL;
+      for (size_t argument_count = 0; argument_count < user_command->argc_; argument_count++)
+      {
+        active_word_end = active_word;
+        while (1)
+        {
+          if (*active_word_end == ' ' || *active_word_end == '\0')
+            break;
+          active_word_end++;
+        }
+        user_command->argv_[argument_count] = calloc(active_word_end - active_word + 1, sizeof(char));
+        if (user_command->argv_[argument_count] == NULL)
+        {
+          freeUserCommand(user_command);
+          return RETURN_BAD_ALLOC;
+        }
+        strncpy(user_command->argv_[argument_count], active_word, active_word_end - active_word);
+        active_word = getNextWordInString(active_word_end);
+      }
+      free(user_input);
+      return RETURN_SUCCESS;
     }
   }
+  if (user_command->mode_ == MODE_DEFAULT)
+  {
+    free(user_input);
+    return RETURN_INVALID;
+  }
   free(user_input);
-  printErrorMessage(ERROR_COMMAND_UNKNOWN);
   return RETURN_INVALID;
 }
 
-ReturnValues executeModes(Modes mode)
+ReturnValues executeModes(UserCommand* user_command)
 {
-  switch (mode)
+  switch (user_command->mode_)
   {
     case MODE_QUIT:
       return modeQuit();
     case MODE_HELP:
       return modeHelp();
     case MODE_LOAD:
-      return modeLoad();
+      return modeLoad(user_command);
     case MODE_CROP:
-      return modeCrop();
+      return modeCrop(user_command);
     case MODE_PLACE:
-      return modePlace();
+      return modePlace(user_command);
     case MODE_UNDO:
       return modeUndo();
     case MODE_PRINT:
       return modePrint();
     case MODE_SWITCH:
-      return modeSwitch();
+      return modeSwitch(user_command);
     case MODE_TREE:
       return modeTree();
     case MODE_BMPS:
       return modeBmps();
     case MODE_SAVE:
-      return modeSave();
+      return modeSave(user_command);
     default:
+      printErrorMessage(ERROR_COMMAND_UNKNOWN);
       return RETURN_INVALID;
   }
 }
@@ -249,20 +291,32 @@ ReturnValues modeHelp(void)
   return RETURN_SUCCESS;
 }
 
-ReturnValues modeLoad(void)
+ReturnValues modeLoad(UserCommand* user_command)
 {
+  for (size_t i = 0; i < 6; i++)
+    if (user_command->argv_[i] != NULL)
+      printf("%zu. |%s|\n", i, user_command->argv_[i]);
+  freeUserCommand(user_command);
   printf("Mode load selected!\n");
   return RETURN_SUCCESS;
 }
 
-ReturnValues modeCrop(void)
+ReturnValues modeCrop(UserCommand* user_command)
 {
+  for (size_t i = 0; i < 6; i++)
+    if (user_command->argv_[i] != NULL)
+      printf("%zu. |%s|\n", i, user_command->argv_[i]);
+  freeUserCommand(user_command);
   printf("Mode crop selected!\n");
   return RETURN_SUCCESS;
 }
 
-ReturnValues modePlace(void)
+ReturnValues modePlace(UserCommand* user_command)
 {
+  for (size_t i = 0; i < 6; i++)
+    if (user_command->argv_[i] != NULL)
+      printf("%zu. |%s|\n", i, user_command->argv_[i]);
+  freeUserCommand(user_command);
   printf("Mode place selected!\n");
   return RETURN_SUCCESS;
 }
@@ -279,8 +333,12 @@ ReturnValues modePrint(void)
   return RETURN_SUCCESS;
 }
 
-ReturnValues modeSwitch(void)
+ReturnValues modeSwitch(UserCommand* user_command)
 {
+  for (size_t i = 0; i < 6; i++)
+    if (user_command->argv_[i] != NULL)
+      printf("%zu. |%s|\n", i, user_command->argv_[i]);
+  freeUserCommand(user_command);
   printf("Mode switch selected!\n");
   return RETURN_SUCCESS;
 }
@@ -297,8 +355,12 @@ ReturnValues modeBmps(void)
   return RETURN_SUCCESS;
 }
 
-ReturnValues modeSave(void)
+ReturnValues modeSave(UserCommand* user_command)
 {
+  for (size_t i = 0; i < 6; i++)
+    if (user_command->argv_[i] != NULL)
+      printf("%zu. |%s|\n", i, user_command->argv_[i]);
+  freeUserCommand(user_command);
   printf("Mode save selected!\n");
   return RETURN_SUCCESS;
 }
@@ -392,6 +454,15 @@ int countWordsInString(char* string_to_count)
       }
     }
     char_counter++;
+  }
+}
+
+void freeUserCommand(UserCommand* user_command)
+{
+  for (size_t i = 0; i < sizeof(user_command->argv_) / sizeof(user_command->argv_[0]); i++)
+  {
+    if (user_command->argv_[i] != NULL)
+      free(user_command->argv_[i]);
   }
 }
 
